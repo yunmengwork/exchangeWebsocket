@@ -133,36 +133,38 @@ class BinanceExtend(Binance):
 
 
 # Coin
-coin = "AXL"
-okxCoin = coin
-bitgetCoin = coin
-binanceCoin = coin
+coins = ["AXL", "ANIME", "DOLO", "MASK", "MOVE"]
+okxCoins = coins
+bitgetCoins = coins
+binanceCoins = coins
 
 # 从okx获取资金费率，指数价格，买卖一档
 okxPublicWss = "wss://wspap.okx.com:8443/ws/v5/public"
 okx = OkxExtend(okxPublicWss, False)
 # 订阅
-okxArgs = [
-    {"channel": "funding-rate", "instId": f"{okxCoin}-USD-SWAP"},
-    {"channel": "index-tickers", "instId": f"{okxCoin}-USDT"},
-    {"channel": "tickers", "instId": f"{okxCoin}-USDT"},
-]
+okxArgs = []
+for okxCoin in okxCoins:
+    okxArgs.append({"channel": "funding-rate", "instId": f"{okxCoin}-USD-SWAP"})
+    okxArgs.append({"channel": "index-tickers", "instId": f"{okxCoin}-USDT"})
+    okxArgs.append({"channel": "tickers", "instId": f"{okxCoin}-USDT"})
+
 
 # 从bitget获取资金费率，指数价格，买卖一档
 bitgetPublicWss = "wss://ws.bitget.com/v2/ws/public"
 bitget = BitgetExtend(bitgetPublicWss, False)
 bitgetArgs = [
     {"instType": "USDT-FUTURES", "channel": "ticker", "instId": f"{bitgetCoin}USDT"}
+    for bitgetCoin in bitgetCoins
 ]
 
 # 从binance获取买卖一档，指数价格，资金费率
 # binancePublicWss = "wss://stream.binance.com:9443/ws" # 现货的ws
 binancePublicWss = "wss://fstream.binance.com/ws"  # 期货的ws
 binance = BinanceExtend(binancePublicWss, False, processRecvInterval=0.0001)
-binanceArgs = [
-    f"{binanceCoin.lower()}usdt@bookTicker",
-    f"{binanceCoin.lower()}usdt@markPrice@1s",
-]
+binanceArgs = []
+for binanceCoin in binanceCoins:
+    binanceArgs.append(f"{binanceCoin.lower()}usdt@bookTicker")
+    binanceArgs.append(f"{binanceCoin.lower()}usdt@markPrice@1s")
 
 
 async def main():
