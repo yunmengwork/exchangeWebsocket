@@ -25,7 +25,7 @@ class ExchangeWebsocket:
             "checkStateConsistentInterval", 5
         )
         self.execRequestsInterval = kwargs.get("execRequestsInterval", 0.2)
-        self.processRecvInterval = kwargs.get("processRecvInterval", 0.001)
+        self.processRecvInterval = kwargs.get("processRecvInterval", 0.0001)
         self.maxWaitforRecvInterval = kwargs.get("maxWaitforRecvInterval", 90)
         self.queueMaxSize = kwargs.get("queueMaxSize", 100)
         # 初始化
