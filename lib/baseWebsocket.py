@@ -33,7 +33,7 @@ class ExchangeWebsocket:
         self.ws = None
         self.needLogin = needLogin
         self.requestQueue = asyncio.Queue(self.queueMaxSize)  # 实时请求队列
-        self.requestLogQueue = asyncio.Queue()  # 日志列表，只在重连时使用
+        self.requestLogList = []  # 日志列表，只在重连时使用
         self.state = State.CLOSED
         self.reconnecting = False
 
@@ -53,19 +53,22 @@ class ExchangeWebsocket:
             if self.ws == None:
                 # 未初始化，重新连接
                 logger.debug("ws未初始化，正在重新连接...")
-                await self.reconnect(self.requestLogQueue)
+                await self.reconnect()
             if self.ws and self.ws.state != self.state:
                 # 状态不一致，需要重新连接
                 logger.debug("状态不一致，正在重新连接...")
-                await self.reconnect(self.requestLogQueue)
+                await self.reconnect()
             if self.ws and self.ws.state == self.state and self.state == State.CLOSED:
                 # 断线，需要重新连接
                 logger.debug("断线，正在重新连接...")
-                await self.reconnect(self.requestLogQueue)
+                await self.reconnect()
 
-    async def reconnect(self, recoverQueue: asyncio.Queue, *args, **kwargs):
+    async def reconnect(self, *args, **kwargs):
         # 重新连接
         self.reconnecting = True
+        recoverQueue = asyncio.Queue()
+        for requestMsg in self.requestLogList:
+            await recoverQueue.put(requestMsg)
         if not (await self.connect(*args, **kwargs)):
             self.reconnecting = False
             return False
@@ -100,7 +103,7 @@ class ExchangeWebsocket:
     async def addRequest(self, requestMsg):
         """添加请求"""
         await self.requestQueue.put(json.dumps(requestMsg))  # 添加到请求队列
-        await self.requestLogQueue.put(json.dumps(requestMsg))  # 添加到日志队列
+        self.requestLogList.append(json.dumps(requestMsg))  # 添加到日志队列
 
     # 监听与执行
     async def execRequests(self):
