@@ -38,16 +38,16 @@ if __name__ == "__main__":
     from config import okxConfig
 
     async def main():
-        url = "wss://wspap.okx.com:8443/ws/v5/private"
+        url = "wss://wspap.okx.com:8443/ws/v5/public"
         okx = Okx(
             url,
-            True,
-            apikey=okxConfig["apikey"],
-            secret=okxConfig["secret"],
-            passphrase=okxConfig["passphrase"],
+            False,
+            # apikey=okxConfig["apikey"],
+            # secret=okxConfig["secret"],
+            # passphrase=okxConfig["passphrase"],
         )
         # 订阅btc-usdt的markprice
-        # await okx.subscribe([{"channel": "funding-rate", "instId": "BTC-USD-SWAP"}])
+        await okx.subscribe([{"channel": "funding-rate", "instId": "SOON-USDT-SWAP"}])
         await okx.run()
 
     asyncio.get_event_loop().run_until_complete(main())

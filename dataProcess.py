@@ -113,10 +113,10 @@ df['spread_binance'] = df["askPx_binance"]-df['bidPx_binance']
 
 
 # 查看效果
-print(df["stragegy1"].sort_values(ascending=False).head(20))
-print(df["stragegy2"].sort_values(ascending=False).head(20))
-print(df["stragegy3"].sort_values(ascending=False).head(20))
-print(df["stragegy4"].sort_values(ascending=False).head(20))
+# print(df["stragegy1"].sort_values(ascending=False).head(20))
+# print(df["stragegy2"].sort_values(ascending=False).head(20))
+# print(df["stragegy3"].sort_values(ascending=False).head(20))
+# print(df["stragegy4"].sort_values(ascending=False).head(20))
 
 
 from matplotlib import pyplot as plt
