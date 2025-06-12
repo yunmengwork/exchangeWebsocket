@@ -129,10 +129,13 @@ class ExchangeWebsocket:
         """循环接受消息并将其交给_processRecv处理"""
         while True:
             if self.ws and self.ws.state == State.OPEN:
-                recv = await self.ws.recv()
-                if recv == "pong":
-                    continue
-                await self._processRecv(recv)
+                try:
+                    recv = await self.ws.recv()
+                    if recv == "pong":
+                        continue
+                    await self._processRecv(recv)
+                except Exception as e:
+                    logger.error(e)
 
             await asyncio.sleep(self.processRecvInterval)
 

@@ -26,12 +26,14 @@ class Binance(ExchangeWebsocket):
     async def processRecv(self):
         while True:
             if self.ws and self.ws.state == State.OPEN:
-                recv = await self.ws.recv()
-                if recv == "ping":
-                    logger.info("recv ping")
-                    await self.ws.pong()
-                    continue
-                await self._processRecv(recv)
+                try:
+                    recv = await self.ws.recv()
+                    if recv == "ping":
+                        await self.ws.pong()
+                        continue
+                    await self._processRecv(recv)
+                except Exception as e:
+                    logger.error(e)
 
             await asyncio.sleep(self.processRecvInterval)
 
