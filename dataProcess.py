@@ -61,7 +61,8 @@ def binanceDataProcess(symbol):
     return df
 
 
-symbol = "KMNOUSDT"
+symbols = ["AXLUSDT"]
+symbol = symbols[0]
 df1 = bitgetDataProcess(symbol)
 df2 = binanceDataProcess(symbol)
 # 根据index合并
@@ -108,11 +109,14 @@ df["stragegy4"] = (
     - feeRate
 )
 
+df["spread_bitget"] = df["askPx_bitget"] - df["bidPx_bitget"]
+df["spread_binance"] = df["askPx_binance"] - df["bidPx_binance"]
+
 # 查看效果
-print(df["stragegy1"].sort_values(ascending=False).head(20))
-print(df["stragegy2"].sort_values(ascending=False).head(20))
-print(df["stragegy3"].sort_values(ascending=False).head(20))
-print(df["stragegy4"].sort_values(ascending=False).head(20))
+# print(df["stragegy1"].sort_values(ascending=False).head(20))
+# print(df["stragegy2"].sort_values(ascending=False).head(20))
+# print(df["stragegy3"].sort_values(ascending=False).head(20))
+# print(df["stragegy4"].sort_values(ascending=False).head(20))
 
 
 from matplotlib import pyplot as plt
@@ -157,5 +161,27 @@ ax2.plot(df.index, df["stragegy1"] + df["stragegy4"], label="Strategy 1+4")
 ax2.plot(df.index, df["stragegy2"] + df["stragegy3"], label="Strategy 2+3")
 ax2.xaxis.set_tick_params(rotation=45)
 ax2.legend(loc="upper left")
+
+fig3 = plt.figure()
+ax3 = fig3.add_subplot(1, 1, 1)
+ax3.plot(df.index, df["spread_bitget"], label="spread_bitget")
+ax3.plot(df.index, df["spread_binance"], label="spread_binance")
+ax3.xaxis.set_tick_params(rotation=45)
+ax3.legend(loc="upper left")
+
+
+fig4 = plt.figure()
+ax4 = fig4.add_subplot(1, 1, 1)
+ax4.plot(df.index, df["fundingRate_bitget"], label="fundingRate_bitget")
+ax4.plot(df.index, df["fundingRate_binance"], label="fundingRate_binance")
+ax4.xaxis.set_tick_params(rotation=45)
+ax4.legend(loc="upper left")
+
+fig5 = plt.figure()
+ax5 = fig5.add_subplot(1, 1, 1)
+ax5.plot(df.index, df["askPx_bitget"], label="askPx_bitget")
+ax5.plot(df.index, df["bidPx_bitget"], label="bidPx_bitget")
+ax5.xaxis.set_tick_params(rotation=45)
+ax5.legend(loc="upper left")
 
 plt.show()
