@@ -1,6 +1,7 @@
 import asyncio
 import sys
 import os
+import requests
 
 sys.path.append(os.path.dirname(__file__) + "/..")
 from lib.baseWebsocket import ExchangeWebsocket
@@ -16,7 +17,7 @@ class Okx(ExchangeWebsocket):
         secret=None,
         passphrase=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(url, needLogin, *args, **kwargs)
         self.apikey = apikey
@@ -33,21 +34,33 @@ class Okx(ExchangeWebsocket):
         await self.addRequest(params)
 
 
+def getAllOkxSymbols() -> list[str]:
+    api_url = "https://www.okx.com/api/v5/public/instruments?instType=SWAP"
+    response = requests.get(api_url)
+    if response.status_code == 200:
+        data = response.json()
+        symbols = [
+            item["instId"] for item in data["data"] if item["settleCcy"] == "USDT"
+        ]
+        return symbols
+    else:
+        print(f"Error fetching symbols: {response.status_code}")
+        return []
+
+
 if __name__ == "__main__":
+    getAllOkxSymbols()
+    # async def main():
+    #     url = "wss://wspap.okx.com:8443/ws/v5/public"
+    #     okx = Okx(
+    #         url,
+    #         False,
+    #         # apikey=okxConfig["apikey"],
+    #         # secret=okxConfig["secret"],
+    #         # passphrase=okxConfig["passphrase"],
+    #     )
+    #     # 订阅btc-usdt的markprice
+    #     await okx.subscribe([{"channel": "funding-rate", "instId": instId} for instId in getAllOkxSymbols()[:10]])
+    #     await okx.run()
 
-    from config import okxConfig
-
-    async def main():
-        url = "wss://wspap.okx.com:8443/ws/v5/public"
-        okx = Okx(
-            url,
-            False,
-            # apikey=okxConfig["apikey"],
-            # secret=okxConfig["secret"],
-            # passphrase=okxConfig["passphrase"],
-        )
-        # 订阅btc-usdt的markprice
-        await okx.subscribe([{"channel": "funding-rate", "instId": "SOON-USDT-SWAP"}])
-        await okx.run()
-
-    asyncio.get_event_loop().run_until_complete(main())
+    # asyncio.get_event_loop().run_until_complete(main())
