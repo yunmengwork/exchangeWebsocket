@@ -4,6 +4,7 @@ import os
 import json
 import random
 from loguru import logger
+import requests
 
 sys.path.append(os.path.dirname(__file__) + "/..")
 from lib.baseWebsocket import ExchangeWebsocket
@@ -48,13 +49,32 @@ class Binance(ExchangeWebsocket):
         await self.addRequest(params)
 
 
+def getAllBinanceSymbols():
+    """获取所有币安交易对"""
+    url = "https://api.binance.com/api/v3/exchangeInfo"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        symbols = [s["symbol"] for s in data["symbols"] if s["quoteAsset"] == "USDT"]
+        return symbols
+    except Exception as e:
+        logger.error(f"Error fetching Binance symbols: {e}")
+        return []
+
+
 if __name__ == "__main__":
 
-    async def main():
-        url = "wss://fstream.binance.com/ws"
-        binance = Binance(url, False)
-        args = ["btcusdt@markPrice@1s"]
-        await binance.subscribe(args)
-        await binance.run()
+    print("getting all binance symbols...")
+    allBinanceSymbols = getAllBinanceSymbols()
+    print(f"Total Binance symbols: {len(allBinanceSymbols)}")
+    if not allBinanceSymbols:
+        logger.error("No Binance symbols found. Exiting.")
+        exit(1)
+    # async def main():
+    #     url = "wss://fstream.binance.com/ws"
+    #     binance = Binance(url, False)
+    #     args = ["btcusdt@markPrice@1s"]
+    #     await binance.subscribe(args)
+    #     await binance.run()
 
-    asyncio.get_event_loop().run_until_complete(main())
+    # asyncio.get_event_loop().run_until_complete(main())
