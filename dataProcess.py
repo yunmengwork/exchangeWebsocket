@@ -145,7 +145,6 @@ def analyzeData(dfDict: dict[str, pd.DataFrame], feeRate: float = 0.00025):
         df.index.to_series() * 100, unit="ms", utc=True
     ).dt.tz_convert("Asia/Shanghai")
 
-    feeRate = 0.00025
     #  在exchange1做maker long,在exchange2做taker short
     df["operation1"] = (
         df["bidPx_" + exchange2] / df["bidPx_" + exchange1] - 1
