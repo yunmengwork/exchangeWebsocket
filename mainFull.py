@@ -169,7 +169,7 @@ binancePublicWss = "wss://fstream.binance.com/ws"  # 期货的ws
 binanceDict: dict[str, BinanceExtend] = {}
 binanceSubscribeBatchSize = 50  # 每批订阅的数量
 binanceArgs = [
-    # "!markPrice@arr",
+    "!markPrice@arr",
 ]
 allBinanceSymbols = getAllBinanceSymbols()
 for binanceCoin in allBinanceSymbols:
