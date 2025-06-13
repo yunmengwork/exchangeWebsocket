@@ -337,6 +337,106 @@ def plotFundingRate(
         plt.show()
 
 
+def plotPairAskBidPriceInterval(
+    df: pd.DataFrame, exchange1: str, exchange2: str, singleShow: bool = False
+):
+    """
+    绘制两个交易所的买一卖一价差图表
+    """
+    if df.empty:
+        logger.error("DataFrame is empty, cannot plot pair ask-bid price interval.")
+        return
+
+    # 确保索引是时间戳格式
+    if not pd.api.types.is_datetime64_any_dtype(df.index):
+        df.index = pd.to_datetime(df.index, unit="ms")
+
+    # 绘制买一卖一价差图表
+    plt.figure(figsize=(14, 8))
+    plt.plot(
+        df.index,
+        (df["askPx_" + exchange1] - df["askPx_" + exchange2])
+        / (df["askPx_" + exchange1] + df["askPx_" + exchange2]),
+        label=f"{exchange1} ask - {exchange2} ask",
+    )
+    plt.plot(
+        df.index,
+        (df["bidPx_" + exchange1] - df["bidPx_" + exchange2])
+        / (df["bidPx_" + exchange1] + df["bidPx_" + exchange2]),
+        label=f"{exchange1} bid - {exchange2} bid",
+    )
+    plt.title("交易所买一卖一价差")
+    plt.xlabel("时间")
+    plt.ylabel("价差率")
+    plt.xticks(rotation=45)
+    plt.legend(loc="upper left")
+    plt.grid()
+    if singleShow:
+        plt.show()
+
+
+def plotMiddlePriceMove(
+    df: pd.DataFrame, exchange1: str, exchange2: str, singleShow: bool = False
+):
+    """
+    绘制两个交易所的中间价格移动图表
+    :param df: 包含中间价格数据的DataFrame
+    """
+    if df.empty:
+        logger.error("DataFrame is empty, cannot plot middle price move.")
+        return
+
+    # 确保索引是时间戳格式
+    if not pd.api.types.is_datetime64_any_dtype(df.index):
+        df.index = pd.to_datetime(df.index, unit="ms")
+
+    # 绘制中间价格移动图表
+    fig = plt.figure(figsize=(14, 8))
+    ax1 = fig.add_subplot(2, 1, 1)
+    ax1.plot(
+        df.index,
+        (df["askPx_" + exchange1] + df["bidPx_" + exchange1]) / 2,
+        label=f"{exchange1} mid price",
+    )
+    ax1.plot(
+        df.index,
+        (df["askPx_" + exchange2] + df["bidPx_" + exchange2]) / 2,
+        label=f"{exchange2} mid price",
+    )
+    ax1.set_title("交易所中间价格移动")
+    # ax1.set_xlabel("时间")
+    ax1.set_ylabel("中间价格")
+    ax1.tick_params(axis="x", rotation=45)
+    ax1.legend(loc="upper left")
+    ax1.grid()
+    ax2 = fig.add_subplot(2, 1, 2)
+    ax2.plot(
+        df.index,
+        (
+            (df["askPx_" + exchange1] + df["bidPx_" + exchange1]) / 2
+            - (df["askPx_" + exchange2] + df["bidPx_" + exchange2]) / 2
+        )
+        / (
+            (
+                df["askPx_" + exchange1]
+                + df["bidPx_" + exchange1]
+                + df["askPx_" + exchange2]
+                + df["bidPx_" + exchange2]
+            )
+            / 4
+        ),
+        label=f"{exchange1} mid - {exchange2} mid",
+    )
+    ax2.set_title("交易所中间价格差")
+    ax2.set_xlabel("时间")
+    ax2.set_ylabel("中间价格差率")
+    ax2.tick_params(axis="x", rotation=45)
+    ax2.legend(loc="upper left")
+    ax2.grid()
+    if singleShow:
+        plt.show()
+
+
 class Exchange(Enum):
     BITGET = "bitget"
     BINANCE = "binance"
@@ -359,8 +459,10 @@ def analyze(symbol: str, exchange1: Exchange, exchange2: Exchange):
             PlotOperations(df, exchange_1, exchange_2)
             plotStrategies(df, exchange_1, exchange_2)
             plotSpread(df, exchange_1, exchange_2)
+            plotPairAskBidPriceInterval(df, exchange_1, exchange_2)
+            plotMiddlePriceMove(df, exchange_1, exchange_2)
             plotFundingRate(df, exchange_1, exchange_2)
     plt.show()
 
 
-analyze("BTCUSDT", Exchange.OKX, Exchange.BINANCE)
+analyze("ANIMEUSDT", Exchange.BINANCE, Exchange.BITGET)
