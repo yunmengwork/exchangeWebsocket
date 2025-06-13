@@ -8,7 +8,7 @@ def bitgetDataProcess(symbol):
     if not os.path.exists(file):
         return
     df = pd.read_csv(file)
-    print(df.columns)
+    # print(df.columns)
     df["timestamp"] = (df["timestamp"].astype(int) / 100).astype(int)
     df = df.groupby("timestamp").agg(
         {
@@ -61,7 +61,7 @@ def binanceDataProcess(symbol):
     return df
 
 symbols = ['ANIMEUSDT','AXLUSDT','DOLOUSDT','MASKUSDT','MOVEUSDT']
-symbol = symbols[0]
+symbol = symbols[4]
 df1 = bitgetDataProcess(symbol)
 df2 = binanceDataProcess(symbol)
 # 根据index合并
@@ -165,8 +165,8 @@ ax2.legend(loc="upper left")
 
 fig3 = plt.figure()
 ax3 = fig3.add_subplot(1, 1, 1)
-ax3.plot(df.index, df['spread_bitget'], label="spread_bitget")
-ax3.plot(df.index, df["spread_binance"], label="spread_binance")
+ax3.plot(df.index, df['spread_bitget']/df['indexPrice_bitget'], label="spread_bitget")
+ax3.plot(df.index, df["spread_binance"]/df['indexPrice_binance'], label="spread_binance")
 ax3.xaxis.set_tick_params(rotation=45)
 ax3.legend(loc="upper left")
 
