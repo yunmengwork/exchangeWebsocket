@@ -2,6 +2,11 @@ from exchange.okx import Okx, getAllOkxSymbols
 from exchange.bitget import Bitget, getAllBitgetSymbols
 from exchange.binance import Binance, getAllBinanceSymbols
 from exchange.bybit import Bybit
+from exchange.handler import (
+    okxSingleMsgHandler,
+    binanceSingleMsgHandler,
+    bitgetSingleMsgHandler,
+)
 from loguru import logger
 import asyncio
 import os
@@ -20,66 +25,11 @@ for e in exchanges:
 
 def okxMsgHandler(msg):
     # logger.debug(msg)
-    try:
-        msg = json.loads(msg)
-        if "event" in msg.keys():
-            return
-        channel = msg["arg"]["channel"]
-        data = msg["data"][0]
-        if not os.path.exists(f"data/okx/{channel}/"):
-            os.makedirs(f"data/okx/{channel}/")
-        saveFile = f"data/okx/{channel}/{msg['arg']['instId']}.csv"
-        if channel == "funding-rate":
-            if not os.path.exists(saveFile):
-                with open(saveFile, "a+") as f:
-                    f.write(f"timestamp,fundingRate\n")
-            with open(saveFile, "a+") as f:
-                f.write(f"{data['ts']},{data['fundingRate']}\n")
-        if channel == "index-tickers":
-            if not os.path.exists(saveFile):
-                with open(saveFile, "a+") as f:
-                    f.write(f"timestamp,indexPrice\n")
-            with open(saveFile, "a+") as f:
-                f.write(f"{data['ts']},{data['idxPx']}\n")
-        if channel == "tickers":
-            if not os.path.exists(saveFile):
-                with open(saveFile, "a+") as f:
-                    f.write(f"timestamp,askPx,askSz,bidPx,bidSz\n")
-            with open(saveFile, "a+") as f:
-                f.write(
-                    f"{data['ts']},{data['askPx']},{data['askSz']},{data['bidPx']},{data['bidSz']}\n"
-                )
-    except Exception as e:
-        logger.error(msg)
-        logger.error(e)
+    return okxSingleMsgHandler(msg)
 
 
 def _binanceMsgHandler(msg: dict):  # 单条数据
-    try:
-        if "e" not in msg.keys():
-            return
-        event = msg["e"]
-        symbol = msg["s"]
-        if not os.path.exists(f"data/binance/{event}/"):
-            os.makedirs(f"data/binance/{event}/")
-        saveFile = f"data/binance/{event}/{symbol}.csv"
-        if event == "bookTicker":
-            if not os.path.exists(saveFile):
-                with open(saveFile, "a+") as f:
-                    f.write(f"timestamp,askPx,askSz,bidPx,bidSz\n")
-            with open(saveFile, "a+") as f:
-                f.write(f"{msg['T']},{msg['a']},{msg['A']},{msg['b']},{msg['B']}\n")
-        elif event == "markPriceUpdate":
-            if not os.path.exists(saveFile):
-                with open(saveFile, "a+") as f:
-                    f.write(f"timestamp,fundingRate,indexPrice\n")
-            with open(saveFile, "a+") as f:
-                f.write(f"{msg['E']},{msg['r']},{msg['i']}\n")
-        else:
-            logger.debug(msg)
-    except Exception as e:
-        logger.error(msg)
-        logger.error(e)
+    return binanceSingleMsgHandler(msg)
 
 
 def binanceMsgHandler(msg):
@@ -98,28 +48,7 @@ def binanceMsgHandler(msg):
 
 def bitgetMsgHandler(msg):
     # logger.debug(msg)
-    try:
-        msg = json.loads(msg)
-        if "event" in msg.keys():
-            return
-        channel = msg["arg"]["channel"]
-        data = msg["data"][0]
-        if not os.path.exists(f"data/bitget/{channel}/"):
-            os.makedirs(f"data/bitget/{channel}/")
-        saveFile = f"data/bitget/{channel}/{msg['arg']['instId']}.csv"
-        if channel == "ticker":
-            if not os.path.exists(saveFile):
-                with open(saveFile, "a+") as f:
-                    f.write(
-                        f"timestamp,fundingRate,indexPrice,askPx,askSz,bidPx,bidSz\n"
-                    )
-            with open(saveFile, "a+") as f:
-                f.write(
-                    f"{data['ts']},{data['fundingRate']},{data['indexPrice']},{data['askPr']},{data['askSz']},{data['bidPr']},{data['bidSz']}\n"
-                )
-    except Exception as e:
-        logger.error(msg)
-        logger.error(e)
+    return bitgetSingleMsgHandler(msg)
 
 
 class OkxExtend(Okx):
