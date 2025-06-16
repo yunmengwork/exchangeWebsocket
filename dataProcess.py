@@ -4,6 +4,10 @@ import os
 from loguru import logger
 import matplotlib.pyplot as plt
 from enum import Enum
+from exchange.getFundingInfo import (
+    getBinanceFundingInfoBySombol,
+    getBitgetFundingInfoBySombol,
+)
 
 # 显示中文
 plt.rcParams["font.sans-serif"] = ["SimHei"]  # 指定默认字体
@@ -40,6 +44,15 @@ def bitgetDataReader(symbol):
             "bidSz": "mean",
         }
     )
+    df.ffill(inplace=True)
+    df.dropna(inplace=True)
+    fundingMinMax = getBitgetFundingInfoBySombol(symbol)
+    if fundingMinMax is not None:
+        df["minFundingRate"] = fundingMinMax["minFundingRate"]
+        df["maxFundingRate"] = fundingMinMax["maxFundingRate"]
+    else:
+        df["minFundingRate"] = -0.0001
+        df["maxFundingRate"] = 0.0001
     return df
 
 
@@ -102,6 +115,13 @@ def binanceDataReader(symbol):
     )
     df.ffill(inplace=True)
     df.dropna(inplace=True)
+    fundingMinMax = getBinanceFundingInfoBySombol(symbol)
+    if fundingMinMax is not None:
+        df["minFundingRate"] = fundingMinMax["adjustedFundingRateFloor"]
+        df["maxFundingRate"] = fundingMinMax["adjustedFundingRateCap"]
+    else:
+        df["minFundingRate"] = -0.0001
+        df["maxFundingRate"] = 0.0001
     return df
 
 
@@ -127,6 +147,8 @@ def okxDataReader(symbol):
             "ts": "timestamp",
             "fundingRate": "fundingRate",
             "nextFundingTime": "nextFundingTime",
+            "minFundingRate": "minFundingRate",
+            "maxFundingRate": "maxFundingRate",
         },
         inplace=True,
     )
@@ -159,7 +181,12 @@ def okxDataReader(symbol):
     tickersDf["timestamp"] = (tickersDf["timestamp"].astype(int) / 100).astype(int)
 
     fundingRateDf = fundingRateDf.groupby("timestamp").agg(
-        {"fundingRate": "mean", "nextFundingTime": "median"}
+        {
+            "fundingRate": "mean",
+            "nextFundingTime": "median",
+            "minFundingRate": "mean",
+            "maxFundingRate": "mean",
+        }
     )
     indexPriceDf = indexPriceDf.groupby("timestamp").agg({"indexPrice": "mean"})
     tickersDf = tickersDf.groupby("timestamp").agg(
@@ -412,6 +439,7 @@ def plotFundingRate(
     exchange2: str,
     singleShow: bool = False,
     fundingTimeFlag: bool = False,
+    fundingBoundFlag: bool = True,
 ):
     """
     绘制资金费率图表
@@ -451,6 +479,32 @@ def plotFundingRate(
         ax = addFundingTimeAtFig(
             ax, df["nextFundingTime_" + exchange2].unique(), exchange2
         )
+    if fundingBoundFlag:
+        ax.axhline(
+            df["minFundingRate_" + exchange1].astype(float).mean(),
+            color="r",
+            linestyle="--",
+            label=f"min funding rate {exchange1}",
+        )
+        ax.axhline(
+            df["maxFundingRate_" + exchange1].astype(float).mean(),
+            color="r",
+            linestyle="--",
+            label=f"max funding rate {exchange1}",
+        )
+        ax.axhline(
+            df["minFundingRate_" + exchange2].astype(float).mean(),
+            color="g",
+            linestyle="--",
+            label=f"min funding rate {exchange2}",
+        )
+        ax.axhline(
+            df["maxFundingRate_" + exchange2].astype(float).mean(),
+            color="g",
+            linestyle="--",
+            label=f"max funding rate {exchange2}",
+        )
+        ax.legend(loc="upper right")
     if singleShow:
         plt.show()
 
@@ -609,8 +663,8 @@ def analyze(symbol: str, exchange1: Exchange, exchange2: Exchange):
             plotSpread(df, exchange_1, exchange_2)
             plotPairAskBidPriceInterval(df, exchange_1, exchange_2)
             plotMiddlePriceMove(df, exchange_1, exchange_2)
-            plotFundingRate(df, exchange_1, exchange_2, fundingTimeFlag=True)
+            plotFundingRate(df, exchange_1, exchange_2, fundingTimeFlag=False)
     plt.show()
 
 
-analyze("RVNUSDT", Exchange.BINANCE, Exchange.BITGET)
+analyze("BIDUSDT", Exchange.BINANCE, Exchange.BITGET)
