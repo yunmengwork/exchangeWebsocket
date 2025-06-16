@@ -194,7 +194,7 @@ if __name__ == "__main__":
     bitgetSymbols = symbols
 
     for okxCoin in okxSymbols:
-        okxCoin = okxCoin.rstrip("USDT") + "-USDT"
+        okxCoin = okxCoin.rstrip("USDT") + "-USDT" + "-SWAP"
         okxArgs.append({"channel": "funding-rate", "instId": f"{okxCoin}"})
         okxArgs.append(
             {"channel": "index-tickers", "instId": f"{okxCoin.rstrip('-SWAP')}"}
