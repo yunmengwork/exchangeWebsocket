@@ -221,7 +221,9 @@ def okxDataReader(symbol):
     return df
 
 
-def analyzeData(dfDict: dict[str, pd.DataFrame], feeRate: float = 0.00025):
+def analyzeData(
+    dfDict: dict[str, pd.DataFrame], feeRate: float = 0.00025, extendFlag: bool = True
+):
     if len(dfDict) != 2:
         logger.error("df数量不等于2，无法分析")
         return
@@ -241,6 +243,9 @@ def analyzeData(dfDict: dict[str, pd.DataFrame], feeRate: float = 0.00025):
         how="left",
         suffixes=("_" + exchange1, "_" + exchange2),
     )
+    # 是否需要扩展数据量
+    if extendFlag:
+        df.ffill(inplace=True)
     df.dropna(inplace=True)
 
     df.index = pd.to_datetime(
@@ -685,7 +690,9 @@ class Exchange(Enum):
     OKX = "okx"
 
 
-def analyze(symbol: str, exchange1: Exchange, exchange2: Exchange):
+def analyze(
+    symbol: str, exchange1: Exchange, exchange2: Exchange, extendFlag: bool = True
+):
     exchangeDict = {
         Exchange.BITGET: bitgetDataReader,
         Exchange.BINANCE: binanceDataReader,
@@ -695,7 +702,9 @@ def analyze(symbol: str, exchange1: Exchange, exchange2: Exchange):
     df2 = exchangeDict[exchange2](symbol)
     if df1 is not None and df2 is not None:
         df, exchange_1, exchange_2 = analyzeData(
-            {exchange1.value: df1, exchange2.value: df2}, feeRate=0.0001
+            {exchange1.value: df1, exchange2.value: df2},
+            feeRate=0.0001,
+            extendFlag=extendFlag,
         )
         if df is not None:
             plotOperations(df, exchange_1, exchange_2)
@@ -711,4 +720,4 @@ import os
 
 if not os.path.exists("./images"):
     os.makedirs("./images")
-analyze("BTCUSDT", Exchange.BINANCE, Exchange.BITGET)
+analyze("BTCUSDT", Exchange.BINANCE, Exchange.BITGET, extendFlag=False)
