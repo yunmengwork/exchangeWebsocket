@@ -51,8 +51,9 @@ def bitgetDataReader(symbol):
         df["minFundingRate"] = fundingMinMax["minFundingRate"]
         df["maxFundingRate"] = fundingMinMax["maxFundingRate"]
     else:
-        df["minFundingRate"] = -0.0001
-        df["maxFundingRate"] = 0.0001
+        raise ValueError(
+            f"Funding info for symbol {symbol} not found in Bitget funding info."
+        )
     return df
 
 
@@ -120,8 +121,8 @@ def binanceDataReader(symbol):
         df["minFundingRate"] = fundingMinMax["adjustedFundingRateFloor"]
         df["maxFundingRate"] = fundingMinMax["adjustedFundingRateCap"]
     else:
-        df["minFundingRate"] = -0.0001
-        df["maxFundingRate"] = 0.0001
+        df["minFundingRate"] = -0.003
+        df["maxFundingRate"] = 0.003
     return df
 
 
@@ -265,7 +266,7 @@ def addFundingTimeAtFig(ax: plt.Axes, fundingTime: list[int], exchange: str):
     return ax
 
 
-def PlotOperations(
+def plotOperations(
     df: pd.DataFrame,
     exchange1: str,
     exchange2: str,
@@ -323,6 +324,10 @@ def PlotOperations(
         )
     if singleShow:
         plt.show()
+    fig.savefig(
+        f"./images/operations_{exchange1}_{exchange2}.png",
+        bbox_inches="tight",
+    )
 
 
 def plotStrategies(
@@ -382,6 +387,10 @@ def plotStrategies(
         )
     if singleShow:
         plt.show()
+    fig.savefig(
+        f"./images/strategies_{exchange1}_{exchange2}.png",
+        bbox_inches="tight",
+    )
 
 
 def plotSpread(
@@ -431,6 +440,10 @@ def plotSpread(
         )
     if singleShow:
         plt.show()
+    fig.savefig(
+        f"./images/spread_{exchange1}_{exchange2}.png",
+        bbox_inches="tight",
+    )
 
 
 def plotFundingRate(
@@ -507,6 +520,10 @@ def plotFundingRate(
         ax.legend(loc="upper right")
     if singleShow:
         plt.show()
+    fig.savefig(
+        f"./images/fundingRate_{exchange1}_{exchange2}.png",
+        bbox_inches="tight",
+    )
 
 
 def plotPairAskBidPriceInterval(
@@ -557,6 +574,10 @@ def plotPairAskBidPriceInterval(
         )
     if singleShow:
         plt.show()
+    fig.savefig(
+        f"./images/pairAskBidPriceInterval_{exchange1}_{exchange2}.png",
+        bbox_inches="tight",
+    )
 
 
 def plotMiddlePriceMove(
@@ -637,6 +658,10 @@ def plotMiddlePriceMove(
         )
     if singleShow:
         plt.show()
+    fig.savefig(
+        f"./images/middlePriceMove_{exchange1}_{exchange2}.png",
+        bbox_inches="tight",
+    )
 
 
 class Exchange(Enum):
@@ -658,7 +683,7 @@ def analyze(symbol: str, exchange1: Exchange, exchange2: Exchange):
             {exchange1.value: df1, exchange2.value: df2}, feeRate=0.0001
         )
         if df is not None:
-            PlotOperations(df, exchange_1, exchange_2)
+            plotOperations(df, exchange_1, exchange_2)
             plotStrategies(df, exchange_1, exchange_2)
             plotSpread(df, exchange_1, exchange_2)
             plotPairAskBidPriceInterval(df, exchange_1, exchange_2)
@@ -667,4 +692,8 @@ def analyze(symbol: str, exchange1: Exchange, exchange2: Exchange):
     plt.show()
 
 
-analyze("BIDUSDT", Exchange.BINANCE, Exchange.BITGET)
+import os
+
+if not os.path.exists("./images"):
+    os.makedirs("./images")
+analyze("BTCUSDT", Exchange.BINANCE, Exchange.BITGET)
