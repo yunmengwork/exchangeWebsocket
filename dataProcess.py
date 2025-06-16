@@ -8,10 +8,25 @@ from exchange.getFundingInfo import (
     getBinanceFundingInfoBySombol,
     getBitgetFundingInfoBySombol,
 )
+import matplotlib.font_manager as fm
+
+# 设置字体路径
+font_path = "./simhei.ttf"
+# 检查字体文件是否存在
+if not os.path.exists(font_path):
+    logger.error(f"Font file {font_path} does not exist.")
+# 设置字体
+fm.fontManager.addfont(font_path)
+# 设置字体为SimHei
+plt.rcParams["font.family"] = "SimHei"  # 设置全局字体为SimHei
+# 设置负号显示正常
+plt.rcParams["axes.unicode_minus"] = False  # 解决负号显示为方块的问题
+# 设置图像显示中文
+plt.rcParams["font.sans-serif"] = ["SimHei"]  # 指定默认字体
 
 # 显示中文
-plt.rcParams["font.sans-serif"] = ["SimHei"]  # 指定默认字体
-plt.rcParams["axes.unicode_minus"] = False  # 解决保存图像是负号'-'显示为方块的问题
+# plt.rcParams["font.sans-serif"] = ["SimHei"]  # 指定默认字体
+# plt.rcParams["axes.unicode_minus"] = False  # 解决保存图像是负号'-'显示为方块的问题
 
 
 def bitgetDataReader(symbol):
