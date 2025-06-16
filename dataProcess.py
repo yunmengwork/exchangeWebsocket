@@ -716,8 +716,9 @@ def analyze(
     plt.show()
 
 
-import os
+if __name__ == "__main__":
+    import os
 
-if not os.path.exists("./images"):
-    os.makedirs("./images")
-analyze("BTCUSDT", Exchange.BINANCE, Exchange.BITGET, extendFlag=False)
+    if not os.path.exists("./images"):
+        os.makedirs("./images")
+    analyze("BTCUSDT", Exchange.BINANCE, Exchange.BITGET, extendFlag=False)
