@@ -718,7 +718,20 @@ def analyze(
 
 if __name__ == "__main__":
     import os
+    import argparse
 
+    parser = argparse.ArgumentParser(description="获取symbol参数")
+    parser.add_argument(
+        "--symbol",
+        type=str,
+        default="BTCUSDT",
+        help="交易对符号，默认为BTCUSDT",
+    )
+    args = parser.parse_args()
+    symbol = args.symbol.strip().upper()
+    if not symbol.endswith("USDT"):
+        symbol += "USDT"
+    logger.info(f"Analyzing symbol: {symbol}")
     if not os.path.exists("./images"):
         os.makedirs("./images")
-    analyze("BTCUSDT", Exchange.BINANCE, Exchange.BITGET, extendFlag=False)
+    analyze(symbol, Exchange.BINANCE, Exchange.BITGET, extendFlag=False)
