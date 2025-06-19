@@ -63,49 +63,9 @@ def bitgetSingleMsgHandler(msg: str | dict):
         logger.error(e)
 
 
-bookTickerCacheDict: dict[str, list[dict]] = {}
-latestTimestamp: int = int(math.floor(time.time() * 1000))
-
-
-def aggregateBookTickerCache(listCache: list[dict]):
-    # e,s,b,B,a,A,T,E
-    aggregatedData = {
-        "e": "bookTicker",
-        "s": listCache[-1]["s"],
-        "b": listCache[-1]["b"],
-        "B": sum(float(item["B"]) for item in listCache) / len(listCache),
-        "a": listCache[-1]["a"],
-        "A": sum(float(item["A"]) for item in listCache) / len(listCache),
-        "T": listCache[-1]["T"],
-        "E": listCache[-1]["E"],
-    }
-    return aggregatedData
-
-
-def updateBookTickerCache(msg: dict):
-    global bookTickerCacheDict
-    global latestTimestamp
-    symbol = msg["s"]
-    msgTimeToSeconds = int(msg["T"]) // 100 * 100
-    if symbol not in bookTickerCacheDict:
-        bookTickerCacheDict[symbol] = []
-    if msgTimeToSeconds > latestTimestamp:
-        latestTimestamp = msgTimeToSeconds
-        if len(bookTickerCacheDict[symbol]) == 0:
-            bookTickerCacheDict[symbol].append(msg)
-            return None
-        else:
-            # Aggregate the cached data
-            aggData = aggregateBookTickerCache(bookTickerCacheDict[symbol])
-            # Clear the cache for this symbol
-            bookTickerCacheDict[symbol] = [msg]
-            return aggData
-    else:
-        bookTickerCacheDict[symbol].append(msg)
-        return None
-
-
+bookTickerCacheDict: dict[str, dict] = {}
 def binanceSingleMsgHandler(msg: str | dict):
+    global bookTickerCacheDict
     try:
         if isinstance(msg, str):
             msg = json.loads(msg)
@@ -117,13 +77,19 @@ def binanceSingleMsgHandler(msg: str | dict):
             os.makedirs(f"data/binance/{event}/")
         saveFile = f"data/binance/{event}/{symbol}.csv"
         if event == "bookTicker":
-            data = updateBookTickerCache(msg)
-            if data is not None:
-                if not os.path.exists(saveFile):
-                    with open(saveFile, "a+") as f:
-                        f.write(f"{','.join(data.keys())}\n")
-                with open(saveFile, "a+") as f:
-                    f.write(f"{','.join(str(data[col]) for col in data.keys())}\n")
+            lastMsg = bookTickerCacheDict.get(symbol, None)
+            if lastMsg is None:
+                bookTickerCacheDict[symbol] = msg
+            else:
+                if (int(msg['T']) // 100) > (int(lastMsg['T']) // 100):
+                    data = msg
+                    bookTickerCacheDict[symbol] = msg
+                    if data is not None:
+                        if not os.path.exists(saveFile):
+                            with open(saveFile, "a+") as f:
+                                f.write(f"{','.join(data.keys())}\n")
+                        with open(saveFile, "a+") as f:
+                            f.write(f"{','.join(str(data[col]) for col in data.keys())}\n")
         elif event == "markPriceUpdate":
             if not os.path.exists(saveFile):
                 with open(saveFile, "a+") as f:
