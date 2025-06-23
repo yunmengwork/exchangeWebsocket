@@ -22,11 +22,18 @@ parser.add_argument(
     default=False,
     help="Whether to plot the observation window",
 )
+parser.add_argument(
+    "--pltShow",
+    type=bool,
+    default=True,
+    help="Whether to show the plot",
+)
 
 args = parser.parse_args()
 symbol = args.symbol if args.symbol.endswith("USDT") else args.symbol + "USDT"
 symbol = symbol.upper()
 plotObserveWindow = args.plotObserveWindow
+pltShow = args.pltShow
 
 # 读取数据
 binanceDf = binanceDataReader(symbol)
@@ -107,4 +114,6 @@ for i in range((len(ts) - observeWindow - timeWindow) // interval - 1):
 plt.plot(ts.index, ts, label="Original Series", alpha=0.5)
 plt.legend()
 plt.savefig("./model/images/{}_think3.png".format(symbol))
-plt.show()
+if pltShow:
+    plt.show()
+plt.close()
