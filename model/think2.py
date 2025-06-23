@@ -18,14 +18,14 @@ parser = argparse.ArgumentParser(description="ARMA Model Analysis")
 parser.add_argument("--symbol", type=str, default="BTCUSDT", help="Symbol to analyze")
 parser.add_argument(
     "--plotObserveWindow",
-    type=bool,
-    default=False,
+    type=str,
+    default="False",
     help="Whether to plot the observation window",
 )
 parser.add_argument(
     "--pltShow",
-    type=bool,
-    default=True,
+    type=str,
+    default="True",
     help="Whether to show the plot",
 )
 
@@ -34,6 +34,9 @@ symbol = args.symbol if args.symbol.endswith("USDT") else args.symbol + "USDT"
 symbol = symbol.upper()
 plotObserveWindow = args.plotObserveWindow
 pltShow = args.pltShow
+
+plotObserveWindow = plotObserveWindow.lower() == "true"
+pltShow = pltShow.lower() == "true"
 
 # 读取数据
 binanceDf = binanceDataReader(symbol)
