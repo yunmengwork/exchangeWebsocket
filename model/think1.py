@@ -16,9 +16,17 @@ from scipy import stats
 # 设置参数解析器
 parser = argparse.ArgumentParser(description="ARMA Model Analysis")
 parser.add_argument("--symbol", type=str, default="BTCUSDT", help="Symbol to analyze")
+parser.add_argument(
+    "--plotObserveWindow",
+    type=bool,
+    default=False,
+    help="Whether to plot the observation window",
+)
 
 args = parser.parse_args()
 symbol = args.symbol if args.symbol.endswith("USDT") else args.symbol + "USDT"
+symbol = symbol.upper()
+plotObserveWindow = args.plotObserveWindow
 
 # 读取数据
 binanceDf = binanceDataReader(symbol)
@@ -32,14 +40,15 @@ df["askDiff"] = df["askPx_binance"] - df["askPx_bitget"]
 #
 ts = df["askDiff"]
 
-# 聚合ts,按10s聚合
-# ts = ts.resample("5S").last()
-# ts.ffill(inplace=True)  # 向前填充缺失值
+# 聚合ts, 按1s聚合
+ts = ts.resample("1s").last()
+ts.ffill(inplace=True)  # 向前填充缺失值
+ts.dropna(inplace=True)
 #
-observeWindow = 800
-timeWindow = int(observeWindow * 0.08)
+observeWindow = 60 * 60
+timeWindow = int(observeWindow * 0.05)
 interval = 10
-threshold = 0.05
+threshold = 0.01
 plt.figure(figsize=(12, 6))
 plt.axvline(x=ts.index[observeWindow], color="black", linestyle="--", linewidth=0.5)
 for i in range((len(ts) - observeWindow - timeWindow) // interval - 1):
@@ -56,7 +65,22 @@ for i in range((len(ts) - observeWindow - timeWindow) // interval - 1):
     print(f"Window {i}: t-statistic = {t_stat}, p-value = {p_value}")
     # 在end+timeWindow处添加竖线
     if p_value < threshold:
-        plt.axvline(x=ts.index[end + timeWindow], color="green", linestyle="--")
+        if t_stat > 0:
+            # 画出观测区间，用灰色填充观测区间
+            if plotObserveWindow:
+                plt.axvspan(ts.index[start], ts.index[end], color="gray", alpha=0.3)
+            # 画出预测区间，用红色填充预测区间
+            plt.axvspan(
+                ts.index[end], ts.index[end + timeWindow], color="red", alpha=0.3
+            )
+        else:
+            # 画出观测区间，用灰色填充观测区间
+            if plotObserveWindow:
+                plt.axvspan(ts.index[start], ts.index[end], color="gray", alpha=0.3)
+            # 画出预测区间，用绿色填充预测区间
+            plt.axvspan(
+                ts.index[end], ts.index[end + timeWindow], color="green", alpha=0.3
+            )
 
 # 绘制全部数据
 plt.plot(ts.index, ts, label="Original Series", alpha=0.5)

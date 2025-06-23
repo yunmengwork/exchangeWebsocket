@@ -24,12 +24,15 @@ observeWindow是观察期的时间窗口，解释同think1，只是影响并不�
 timeWindow这里是抽样序列的长度。这个值越小，模型识别越敏感
 interval在for循环中每次对序列移动的值
 clipLower = 0.01 这里是下截断数值，当概率小于clipLower，取0.01
-clipUpper = 0.99 同理于clipLower。\[clipLower,clipUpper\]区间越小，识别越敏感
+clipUpper = 0.99 同理于clipLower。[clipLower,clipUpper]区间越小，识别越敏感
 thresholdRate 需要多少比例的样本呆在上区间或者下区间才能判断分布改变的阈值比例。这个值越小，模型越敏感
-lowerThreshold = (clipLower ** (timeWindow * thresholdRate)) * (
-    0.5 ** (timeWindow * (1 - thresholdRate))
-)
-upperThreshold = (clipUpper ** (timeWindow * thresholdRate)) * (
-    0.5 ** (timeWindow * (1 - thresholdRate))
-)
+lowerThreshold = (clipLower ** (timeWindow * thresholdRate)) * (0.5 ** (timeWindow * (1 - thresholdRate)))
+upperThreshold = (clipUpper ** (timeWindow * thresholdRate)) * (0.5 ** (timeWindow * (1 - thresholdRate)))
 注：这里的0.5是根据蒙特卡洛模拟得到的（在一个标准正态分布中，不断的随机的取值然后计算其累计概率并相乘，其平均结果是0.5的n（取值次数）次方）
+
+## [think3.py](./think3.py)
+### 思路
+think3与think2思路一致，只是丢掉正态分布的假设，通过统计频率来计算概率
+
+### 参数
+同think2
