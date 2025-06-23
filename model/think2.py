@@ -101,14 +101,14 @@ for i in range((len(ts) - observeWindow - timeWindow) // interval - 1):
         # 画出观测区间，用灰色填充观测区间
         if plotObserveWindow:
             plt.axvspan(ts.index[start], ts.index[end], color="gray", alpha=0.3)
-        # 画出预测区间，用红色填充预测区间
-        plt.axvspan(ts.index[end], ts.index[end + timeWindow], color="red", alpha=0.3)
+        # 画出预测区间，用绿色填充预测区间
+        plt.axvspan(ts.index[end], ts.index[end + timeWindow], color="green", alpha=0.3)
     if prob >= upperThreshold:
         # 画出观测区间，用灰色填充观测区间
         if plotObserveWindow:
             plt.axvspan(ts.index[start], ts.index[end], color="gray", alpha=0.3)
-        # 画出预测区间，用绿色填充预测区间
-        plt.axvspan(ts.index[end], ts.index[end + timeWindow], color="green", alpha=0.3)
+        # 画出预测区间，用红色填充预测区间
+        plt.axvspan(ts.index[end], ts.index[end + timeWindow], color="red", alpha=0.3)
 
 # 绘制全部数据
 plt.plot(ts.index, ts, label="Original Series", alpha=0.5)
